@@ -4,6 +4,12 @@ from app.routers import auth
 from app.routers.masters import location
 from fastapi.middleware.cors import CORSMiddleware
 
+#forms imports
+from app.models.employees.employee_registration import Employee
+from app.routers.employees import employee_registration
+#from app.schemas.employees.employee_registration import Employee
+
+
 app = FastAPI(title="Core ERP Backend")
 
 # CORS SETTINGS
@@ -25,3 +31,4 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(location.router)
+app.include_router(employee_registration.router)

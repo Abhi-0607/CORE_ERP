@@ -4,24 +4,22 @@ from jose import jwt, JWTError
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.database import get_db
-from app.config import settings
+from app.core.config import settings
 from app.schemas.users import UserOut, Token, SignupRequest, LoginRequest
-from app.crud.users import get_user_by_email, create_user
 from app.utils.security import verify_password
 from app.utils.token import create_access_token
 from app.models.users import User
+from app import crud
+from app.core.security import bearer_scheme
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-
-bearer_scheme = HTTPBearer()
-
 
 # ----------------------------
 # SIGNUP
 # ----------------------------
 @router.post("/signup", response_model=UserOut)
 def signup(user_in: SignupRequest, db: Session = Depends(get_db)):
-    existing = get_user_by_email(db, user_in.email)
+    existing = crud.user.get_by_email(db, email=user_in.email)
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
@@ -32,10 +30,10 @@ def signup(user_in: SignupRequest, db: Session = Depends(get_db)):
             detail="Only HR and ADMIN are allowed to signup"
         )
 
-    user = create_user(db, user_in)
+    user = crud.user.create(db, user_in)
     return user
 
-    user = create_user(db, user_in)
+    user = crud.user.create(db, user_in)
     return user
 
 
@@ -44,7 +42,7 @@ def signup(user_in: SignupRequest, db: Session = Depends(get_db)):
 # ----------------------------
 @router.post("/login", response_model=Token)
 def login(user_in: LoginRequest, db: Session = Depends(get_db)):
-    user = get_user_by_email(db, user_in.email)
+    user = crud.user.get_by_email(db, email=user_in.email)
 
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")

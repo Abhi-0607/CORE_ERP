@@ -1,10 +1,21 @@
 from datetime import datetime, timedelta
 from typing import Optional
+from fastapi.params import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from starlette import status
 from app.core.config import settings
+from app.database import get_db
+from app.models.users import User
+from sqlalchemy.orm import Session  
+from fastapi import HTTPException
+
+bearer_scheme = HTTPBearer(scheme_name="BearerAuth")
+#from app.core.security import bearer_scheme
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)

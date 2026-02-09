@@ -5,11 +5,11 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.core.security import decode_access_token
 from app.models.users import User
+from app.core.security import bearer_scheme
 
-security = HTTPBearer()
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ):
     token = credentials.credentials
