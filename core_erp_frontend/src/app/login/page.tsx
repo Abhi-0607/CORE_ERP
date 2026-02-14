@@ -1,5 +1,6 @@
 "use client";
 
+
 import API from "@/services/api";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
@@ -21,11 +22,6 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginData) => {
     try {
       const res = await API.post("/auth/login", data);
-
-      // assuming backend returns token
-      const token = res.data.access_token;
-
-      localStorage.setItem("token", token);
 
       alert("Login success ✅");
       router.push("/dashboard");

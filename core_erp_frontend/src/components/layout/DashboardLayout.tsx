@@ -1,45 +1,71 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-import { Role } from "@/config/navigation";
+import API from "@/services/api";
+import type { Role } from "@/config/navigation";
 
-type Props = {
-  children: React.ReactNode;
+type MeResponse = {
+  id: number;
+  email: string;
+  role: Role;
+  full_name?: string | null;
 };
 
-export default function DashboardLayout({ children }: Props) {
-  const router = useRouter();
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [me, setMe] = useState<MeResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  /**
-   * TEMP DUMMY USER
-   * Later: read token from localStorage and decode role
-   */
-  const user = {
-    full_name: "Abhignya Gitti",
-    role: "ADMIN" as Role,
-  };
+  useEffect(() => {
+    const loadMe = async () => {
+      try {
+        const res = await API.get("/auth/me");
+        setMe(res.data);
+      } catch (err) {
+        setMe(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  function logout() {
-    localStorage.removeItem("access_token");
-    router.push("/login");
+    loadMe();
+  }, []);
+
+  // while loading, show a simple skeleton
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+
+  // If token missing / invalid
+  if (!me) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-red-600">
+        Unauthorized. Please login again.
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <Sidebar role={user.role} />
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-72 border-r bg-white">
+        <Sidebar role={me.role} />
+      </div>
 
-        <div className="flex-1">
-          <Topbar userName={user.full_name} role={user.role} onLogout={logout} />
+      {/* Main */}
+      <div className="flex-1 flex flex-col">
+        <Topbar user={me} />
 
-          <main className="p-5">
-            <div className="rounded-2xl border bg-white p-5 shadow-sm">
-              {children}
-            </div>
-          </main>
-        </div>
+        <main className="flex-1">{children}</main>
       </div>
     </div>
   );

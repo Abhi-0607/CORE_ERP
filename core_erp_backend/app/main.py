@@ -5,9 +5,7 @@ from app.routers.masters import location
 from fastapi.middleware.cors import CORSMiddleware
 
 #forms imports
-from app.models.employees.employee_registration import Employee
 from app.routers.employees import employee_registration
-#from app.schemas.employees.employee_registration import Employee
 
 
 app = FastAPI(title="Core ERP Backend")
@@ -22,10 +20,11 @@ Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],   # allow POST, GET, OPTIONS, etc
     allow_headers=["*"],   # allow Authorization, Content-Type, etc
+    expose_headers=["*"],  # expose all headers to the client
 )
 
 

@@ -1,82 +1,31 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
+
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>CORE ERP</h1>
-        <p style={styles.subtitle}>
-          Choose an option to continue
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="rounded-xl bg-white p-8 shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold text-center">Core ERP</h1>
 
-        <div style={styles.btnRow}>
-          <Link href="/signup" style={{ ...styles.btn, ...styles.signup }}>
-            SIGN UP
-          </Link>
+        <div className="mt-6 flex flex-col gap-3">
+          <button
+            className="w-full rounded-lg bg-black px-4 py-2 text-white"
+            onClick={() => router.push("/signup")}
+          >
+            Sign Up
+          </button>
 
-          <Link href="/login" style={{ ...styles.btn, ...styles.login }}>
-            LOGIN
-          </Link>
+          <button
+            className="w-full rounded-lg border px-4 py-2"
+            onClick={() => router.push("/login")}
+          >
+            Login
+          </button>
         </div>
       </div>
     </div>
   );
 }
-
-const styles: any = {
-  page: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg, #0f172a, #1e293b)",
-    padding: "20px",
-  },
-  card: {
-    width: "100%",
-    maxWidth: "420px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: "18px",
-    padding: "30px",
-    textAlign: "center",
-    backdropFilter: "blur(10px)",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-  },
-  title: {
-    color: "white",
-    fontSize: "32px",
-    fontWeight: 800,
-    marginBottom: "8px",
-    letterSpacing: "1px",
-  },
-  subtitle: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: "15px",
-    marginBottom: "25px",
-  },
-  btnRow: {
-    display: "flex",
-    gap: "12px",
-    justifyContent: "center",
-  },
-  btn: {
-    flex: 1,
-    padding: "12px 14px",
-    borderRadius: "12px",
-    textDecoration: "none",
-    fontWeight: 700,
-    fontSize: "14px",
-    transition: "0.2s",
-    textAlign: "center",
-  },
-  signup: {
-    background: "white",
-    color: "#0f172a",
-  },
-  login: {
-    background: "rgba(255,255,255,0.12)",
-    color: "white",
-    border: "1px solid rgba(255,255,255,0.2)",
-  },
-};
