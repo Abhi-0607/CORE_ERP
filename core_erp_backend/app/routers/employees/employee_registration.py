@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import logging
-
+from datetime import datetime
 
 from app.database import get_db
 from app.schemas.employees.employee_registration import (
@@ -122,7 +122,6 @@ def update_employee(
 ):
     try:
         crud = EmployeeRegistrationCRUD(db)
-        
         #user_role = current_user.role
         #if user_role not in ["admin", "hr"]:
           #  raise HTTPException(
@@ -181,7 +180,42 @@ def delete_employee(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete employee"
         )
-    
-print("🔥 ROUTES REGISTERED FROM:", __file__)
-for r in router.routes:
-    print("ROUTE:", r.path, r.methods)
+
+@router.post("/{employee_id}/send-invite", status_code=status.HTTP_200_OK)
+def send_employee_invite(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    Permission.require_roles(current_user, [UserRole.ADMIN, UserRole.HR])
+
+    crud = EmployeeRegistrationCRUD(db)
+    employee = crud.get(employee_id)
+
+    if not employee:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found"
+        )
+
+    # If already sent, don't resend unless you want to allow it
+    if employee.invite_sent:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invite already sent"
+        )
+
+    # TODO: later we will actually send email here
+    # For now just mark as sent.
+    employee.invite_sent = True
+    employee.invite_sent_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(employee)
+
+    return {
+        "message": "Invite marked as sent",
+        "employee_id": employee.id,
+        "invite_sent": employee.invite_sent,
+        "invite_sent_at": employee.invite_sent_at
+    }

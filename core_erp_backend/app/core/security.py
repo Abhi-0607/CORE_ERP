@@ -11,7 +11,7 @@ from app.models.users import User
 from sqlalchemy.orm import Session  
 from fastapi import HTTPException
 
-bearer_scheme = HTTPBearer(scheme_name="BearerAuth")
+bearer_scheme = HTTPBearer(scheme_name="BearerAuth", auto_error=False)
 #from app.core.security import bearer_scheme
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

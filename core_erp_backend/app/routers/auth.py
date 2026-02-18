@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
@@ -65,7 +66,6 @@ def login(user_in: LoginRequest,response: Response, db: Session = Depends(get_db
         path="/",
         samesite="lax",
         secure=False,
-        domain = "localhost"  # False for localhost
     )
     print("Cookie set in response")
     print(f"Response headers will include: set-cookie")
@@ -79,7 +79,7 @@ def login(user_in: LoginRequest,response: Response, db: Session = Depends(get_db
 def get_current_user(
     request: Request,
     db: Session = Depends(get_db),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> User:
     token = None
     

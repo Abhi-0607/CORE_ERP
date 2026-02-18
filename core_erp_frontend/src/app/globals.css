@@ -15,8 +15,8 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
+/* Custom scrollbar */ 
+::-webkit-scrollbar { 
   width: 6px;
   height: 6px;
 }

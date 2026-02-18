@@ -79,7 +79,11 @@ class Employee(Base):
     # Status
     status = Column(String(20), default="Active")  # Active, Inactive, Terminated
     date_of_relieving = Column(Date, nullable=True)
-    
+
+    # Invite / Login setup tracking
+    invite_sent = Column(Boolean, default=False, nullable=False)
+    invite_sent_at = Column(DateTime(timezone=True), nullable=True)
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

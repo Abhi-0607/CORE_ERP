@@ -53,7 +53,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Employee Registration",
-        href: "/employees/register",
+        href: "/employees/list",
         icon: UserPlus,
         roles: ["ADMIN", "HR"],
       },

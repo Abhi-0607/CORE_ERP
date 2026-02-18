@@ -179,6 +179,8 @@ class EmployeeRegistrationResponse(EmployeeRegistrationBase):
     aadhar_file_url: Optional[str]
     resume_url: Optional[str]
     date_of_relieving: Optional[date]
+    invite_sent: bool
+    invite_sent_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime]
     

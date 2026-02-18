@@ -1,6 +1,6 @@
 from typing import List, Optional
 from app.models.users import User
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
@@ -11,34 +11,38 @@ from app.utils.permissions import Permission
 from app.constants.roles import UserRole
 from app.core.security import bearer_scheme
 
-async def get_current_user(
+def get_current_user(
+    request: Request,
     db: Session = Depends(get_db),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)
-) -> models.users.User:
-    
-    token = credentials.credentials
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+) -> User:
+    token = None
 
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    
+    # 1) Authorization header
+    if credentials:
+        token = credentials.credentials
+
+    # 2) Cookie
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id = payload.get("sub")
-        
-        if user_id is None:
-            raise credentials_exception
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
-        raise credentials_exception
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-    user = crud.user.get(db, id=int(user_id))
-    if user is None:
-        raise credentials_exception
-    
-    print("PAYLOAD:", payload)
-    print("crud:", dir(crud))
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
 
     return user
 
