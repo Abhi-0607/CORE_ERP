@@ -1,3 +1,4 @@
+import string
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -7,6 +8,7 @@ import logging
 
 from app.models.employees.employee_registration import Employee
 from app.schemas.employees.employee_registration import EmployeeRegistrationCreate, EmployeeRegistrationUpdate
+from app.models.users import User
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,43 @@ class EmployeeRegistrationCRUD:
         self.db.add(db_employee)
         self.db.commit()
         self.db.refresh(db_employee)
-        
+
+        # NOTE: we are doing it here so it happens automatically.
+
+        from app.models.users import User
+        from app.utils.security import hash_password
+        import secrets
+        import string
+
+        # Generate a random password (temporary)
+        alphabet = string.ascii_letters + string.digits
+        raw_password = "".join(secrets.choice(alphabet) for _ in range(10))
+
+        # Check if user already exists with same email
+        existing_user = self.db.query(User).filter(User.email == employee_data.official_email).first()
+        if existing_user:
+        # If employee exists but user already exists, we won't block for now.
+        # But in real ERP, you may want to raise error.
+            logger.warning(f"User already exists for email: {employee_data.official_email}")
+        else:
+            new_user = User(
+                email=employee_data.official_email,
+                role="EMPLOYEE",  # must match role
+                hashed_password = hash_password(raw_password),
+                is_active=True
+            )
+            self.db.add(new_user)
+            self.db.commit()
+            self.db.refresh(new_user)
+
+            # For now we just print password in console
+            # Later you will email this password.
+            print("\n=== EMPLOYEE USER CREATED ===")
+            print(f"Employee: {db_employee.employee_id}")
+            print(f"User Email: {new_user.email}")
+            print(f"Temp Password: {raw_password}")
+            print("=============================\n")
+
         logger.info(f"Created employee: {db_employee.employee_id} - {db_employee.first_name} {db_employee.last_name}")
         return db_employee
 

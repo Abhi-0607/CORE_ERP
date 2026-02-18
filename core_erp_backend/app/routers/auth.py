@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -7,7 +8,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.database import get_db
 from app.core.config import settings
 from app.schemas.users import UserOut, Token, SignupRequest, LoginRequest
-from app.utils.security import verify_password
+from app.utils.security import verify_password, hash_password
 from app.utils.token import create_access_token
 from app.models.users import User
 from app import crud
@@ -53,6 +54,10 @@ def login(user_in: LoginRequest,response: Response, db: Session = Depends(get_db
 
     if not user.is_active:
         raise HTTPException(status_code=403, detail="User is inactive")
+    
+    user.last_login = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)
 
     access_token = create_access_token({"sub": str(user.id)})
     print(f"Token created: {access_token[:20]}...")
